@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "options": {
+    "cwd": "${workspaceFolder}"
+  },
+  "tasks": [
+    {
+      "label": "cmake",
+      "command": "cmake",
+      "args": [
+        "-DCMAKE_BUILD_TYPE=DEBUG",
+        "."
+      ]
+    },
+    {
+      "label": "make",
+      "command": "make"
+    },
+    {
+      "label": "CMake Build",
+      "dependsOn": [
+        "cmake",
+        "make"
+      ]
+    }
+  ]
+}

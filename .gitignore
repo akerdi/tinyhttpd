@@ -1,0 +1,7 @@
+.vscode/launch.json
+.vscode/tasks.json
+app
+CMakeFiles
+cmake_install*
+CMakeCache.txt
+Makefile
