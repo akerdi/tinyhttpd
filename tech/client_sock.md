@@ -14,7 +14,7 @@ Header信息都是描述信息，包括请求method、HTTP版本、Content-Type�
 -------
 |method|空格|url|空格|HTTP版本|\r\n
 |Content-Length:${length}|\r\n
-\r\n
+|\r\n
 Body
 -------
 ```
@@ -85,6 +85,8 @@ int read_line(int client, char* buf, int size) {
 ```
 
 这里逻辑是遇到`\r` 就认为换行。
+
+函数`int(*recv)(int socket, void* buffer, size_t length, int flags)`用于从socket中读取数据。buffer 为读取后保存内存；length 为读取大小；flags 为0代表读取，flags为MSG_PEEK 时代表查看但不读取。
 
 > 另外特别注意`char c`需要提前赋值, Mac环境中，char 未赋值的话，大概率是'\n'，会导致返回`i = 0`, 对之后的业务有影响, 如返回信息到客户端非正常结束`curl: (56) Recv failure: Connection reset by peer`
 
