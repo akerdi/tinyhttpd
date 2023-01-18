@@ -10,7 +10,7 @@ void error_die(char* err) {
 }
 
 int read_line(int client, char* buf, int size) {
-  // 注意c 给他赋值，否则有可能默认是'\n'情况
+  // 注意! char c 提前赋值，否则有可能默认是'\n'情况
   char c = '\0';
   int i = 0;
   int n = 0;
