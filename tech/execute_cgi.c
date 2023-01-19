@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #define DEF_CHAR_ISSPACE(x) (x == ' ')
 #define DEF_SEND_CLIENT send(client, buf, strlen(buf), 0)
@@ -11,9 +12,13 @@
 
 void serve_file(const int, const char*);
 void cat(const int, const FILE*);
+void execute_cgi(const int, const char*, const char*, const char*);
+
 void unimplemented(const int);
 void not_found(const int, const char*);
 void headers(const int);
+void bad_request(const int);
+void cannot_execute(const int);
 
 void error_die(char* err) {
   perror(err);
@@ -68,7 +73,7 @@ void accept_request(int client) {
     unimplemented(client);
     return;
   }
-  // 如果方法为POST 则表示需要处理动作
+  // 如果方法为POST 则表示
   if (strcasecmp(method, "POST") == 0) cgi = 1;
   // 忽略空格
   while (DEF_CHAR_ISSPACE(buf[j]) && j < sizeof(buf)) j++;
@@ -99,7 +104,7 @@ void accept_request(int client) {
     }
   }
   // 合并真实路径
-  sprintf(path, "tech/htdocs%s", url);
+  sprintf(path, "htdocs%s", url);
   // 如果path 最后一个字符为'/', 说明需要补充index.html
   if (path[strlen(path)-1] == '/') strcat(path, "index.html");
 
@@ -111,15 +116,117 @@ void accept_request(int client) {
   } else {
     // 判断如果文件描述为目录，则补充index.html
     if ((st.st_mode & S_IFMT) == S_IFDIR) strcat(path, "/index.html");
+    if ((st.st_mode & S_IXUSR) ||
+        (st.st_mode & S_IXGRP) ||
+        (st.st_mode & S_IXOTH))
+        cgi = 1;
     if (cgi == 0) {
       serve_file(client, path);
     } else {
-      printf("execute_cgi...\n");
+      execute_cgi(client, path, method, query_string);
     }
   }
 
   // 结束时，关闭client的连接
   close(client);
+}
+
+void execute_cgi(const int client, const char* path, const char* method, const char* query_string) {
+  char buf[1024];
+  buf[0] = 'A'; buf[1] = '\0';
+  int read_count = strlen(buf);
+
+  int pipe_in[2];
+  int pipe_out[2];
+  int content_length = -1;
+  pid_t pid;
+  int status;
+  char c = '\0';
+
+  if (strcasecmp(method, "GET") == 0) {
+    while (read_count > 0 && strcmp(buf, "\n")) {
+      read_count = read_line(client, buf, sizeof(buf));
+    }
+  } else {
+    while (read_count > 0 && strcmp(buf, "\n")) {
+      read_count = read_line(client, buf, sizeof(buf));
+      // 由于不需要读取除了Content-Length之外的数据
+      // 直接截取第15个字符(`Content-Length:`下标索引为14)为\0后比对
+      buf[15] = '\0';
+      if (strcmp(buf, "Content-Length:") == 0) {
+        content_length = atoi(&(buf[16]));
+      }
+    }
+    if (content_length == -1) {
+      bad_request(client);
+      return;
+    }
+  }
+  sprintf(buf, "HTTP/1.1 200 OK\r\n");
+  DEF_SEND_CLIENT;
+
+  if (pipe(pipe_in) < 0) {
+    cannot_execute(client);
+    return;
+  }
+  if (pipe(pipe_out) < 0) {
+    cannot_execute(client);
+    return;
+  }
+  if ((pid = fork()) < 0) {
+    cannot_execute(client);
+    return;
+  }
+  if (pid == 0) {
+    close(pipe_in[1]);
+    close(pipe_out[0]);
+    char meth_env[512];
+    char query_env[512];
+    char length_env[512];
+
+    char body[1024];
+    char c = '\0';
+    int i = 0;
+    // 使用dup2(pipe_in[0], 0) 经测试无法获取到color环境变量
+    while (read(pipe_in[0], &c, 1) > 0) {
+      body[i] = c;
+      i++;
+    }
+    body[i] = '\0';
+    putenv(body);
+    close(pipe_in[0]);
+
+    dup2(pipe_out[1], 1);
+
+    sprintf(meth_env, "REQUEST_METHOD=%s", method);
+    putenv(meth_env);
+    if (strcmp(method, "GET") == 0) {
+      sprintf(query_env, "QUERY_STRING=%s", query_string);
+      putenv(query_env);
+    } else {
+      sprintf(length_env, "CONTENT_LENGTH=%d", content_length);
+      putenv(length_env);
+    }
+    execl(path, path, NULL);
+    exit(0);
+  } else {
+    close(pipe_in[0]);
+    close(pipe_out[1]);
+
+    if (strcasecmp(method, "POST") == 0) {
+      for (int i = 0; i < content_length; i++) {
+        recv(client, &c, 1, 0);
+        write(pipe_in[1], &c, 1);
+      }
+    }
+    // close写端，让子进程的读端终止
+    close(pipe_in[1]);
+    while (read(pipe_out[0], &c, 1) > 0) {
+      send(client, &c, 1, 0);
+    }
+    close(pipe_out[0]);
+    waitpid(pid, &status, 0);
+  }
 }
 
 void cat(const int client, const FILE* resource) {
@@ -235,6 +342,29 @@ void unimplemented(const int client) {
 void headers(const int client) {
   char buf[1024];
   sprintf(buf, "HTTP/1.1 200 OK\r\n");
+  DEF_SEND_CLIENT;
+  sprintf(buf, DEF_SERVER_STRING);
+  DEF_SEND_CLIENT;
+  sprintf(buf, "Content-Type: text/html\r\n");
+  DEF_SEND_CLIENT;
+  sprintf(buf, "\r\n");
+  DEF_SEND_CLIENT;
+}
+
+void cannot_execute(const int client) {
+  char buf[1024];
+  sprintf(buf, "HTTP/1.1 500 CAN NOT EXECUTE\r\n");
+  DEF_SEND_CLIENT;
+  sprintf(buf, DEF_SERVER_STRING);
+  DEF_SEND_CLIENT;
+  sprintf(buf, "Content-Type: text/html\r\n");
+  DEF_SEND_CLIENT;
+  sprintf(buf, "\r\n");
+  DEF_SEND_CLIENT;
+}
+void bad_request(const int client) {
+  char buf[1024];
+  sprintf(buf, "HTTP/1.1 400 BAD REQUEST\r\n");
   DEF_SEND_CLIENT;
   sprintf(buf, DEF_SERVER_STRING);
   DEF_SEND_CLIENT;
