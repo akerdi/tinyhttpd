@@ -99,7 +99,7 @@ void accept_request(int client) {
     }
   }
   // 合并真实路径
-  sprintf(path, "htdocs%s", url);
+  sprintf(path, "tech/htdocs%s", url);
   // 如果path 最后一个字符为'/', 说明需要补充index.html
   if (path[strlen(path)-1] == '/') strcat(path, "index.html");
 
