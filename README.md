@@ -1,8 +1,8 @@
 # tinyhttpd源码解析
 
-tinyhttpd 能帮助我们看懂网络请求中的过程，花费小半天时间就能完全读懂，完全是精品项目。其中的CGI部分会用Shell脚本代替。
+tinyhttpd 能帮助我们看懂网络请求中的过程，花费小半天时间就能完全读懂，完全是精品项目。只要跟着教程一步步实现，就能掌握Socket。
 
-本文目的是读懂源码，理解socket交互过程。
+本文目的是读懂源码，理解C/S交互过程。
 
 ## 直接运行环境
 
@@ -16,13 +16,16 @@ IDE: VSCode
 
 运行: `cp .vscode/launch.example.json .vscode/launch.json && cp .vscode/tasks.example.json .vscode/tasks.json` 然后按F5
 
-## 读教程
+浏览器打开对应端口, 如`http://localhost:51888`
+
+在页面中填写颜色, 如red/blue
+
+## 教程
 
 + [启动服务端Socket](./tech/server_sock.md)
-+ [监听浏览器连接并打印请求头信息](./tech/client_sock.md)
++ [浏览器连接并打印请求头信息](./tech/client_sock.md)
 + [发送文件到浏览器](./tech/accept_request.md)
 + [执行浏览器发送的命令](./tech/execute_cgi.md)
-+ [...]
 
 ## 请我喝杯咖啡
 
