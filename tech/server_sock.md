@@ -54,6 +54,8 @@ printf("res: 0x%x\n", htonl(a)); // 0x78563412
 
 创建Socket直接使用方法`int(*socket)(int, int, int)`即完成, 接下来绑定(`bind`)使用的协议族(ipv4/ipv6)、端口、地址, 以及最后的发出监听(`listen`)。
 
-    gcc -o server_sock server_sock.c
-    ./server_sock // 打印出端口号说明成功
+## 测试
+
+    gcc -o app server_sock.c
+    ./app // 打印出端口号说明成功
 

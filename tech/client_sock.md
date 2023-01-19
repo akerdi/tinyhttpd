@@ -120,7 +120,9 @@ void accept_request(int client) {
 
 该方法通过调用read_line 打印出每一行请求头, 并在之后发送对应的信息。
 
-    gcc -o client_sock client_sock.c
-    ./client_sock
+## 测试
+
+    gcc -o app client_sock.c
+    ./app
 
 浏览器打开对应端口, 当页面看到`Success!!!`时表明正确执行。同时也可以使用`curl http://localhost:${port} -v` 查看详细请求过程。
