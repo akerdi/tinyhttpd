@@ -126,3 +126,7 @@ void accept_request(int client) {
     ./app
 
 浏览器打开对应端口, 当页面看到`Success!!!`时表明正确执行。同时也可以使用`curl http://localhost:${port} -v` 查看详细请求过程。
+
+## 下一章
+
+[发送文件到浏览器](./accept_request.md)

@@ -59,3 +59,6 @@ printf("res: 0x%x\n", htonl(a)); // 0x78563412
     gcc -o app server_sock.c
     ./app // 打印出端口号说明成功
 
+## 下一章
+
+[浏览器连接并打印请求头信息](./client_sock.md)

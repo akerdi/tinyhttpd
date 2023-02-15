@@ -132,3 +132,7 @@ void accept_request(int client) {
     ./app # 浏览器打开网页看见页面
 
 > 如果网页没有正常展示，尝试执行`chmod 600 htdocs/index.html` 将index.html文件改为非执行权限
+
+## 下一章
+
+[执行浏览器发送的命令](./execute_cgi.md)
