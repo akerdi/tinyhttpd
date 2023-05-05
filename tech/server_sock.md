@@ -30,12 +30,13 @@ int startup(u_short* port) {
 ```
 h代表host主机、n代表net网络、l代表long长整型、s代表short短整形。
 
-`htonl`/`htons`/`ntohl`/`ntohs` 是用于转换字节顺序的函数。计算机内一般是大端存储: `0x12345678`, 最左侧的`0x12`存储在高位；网络发送时，用的是小端模式。如:
+`htonl`/`htons`/`ntohl`/`ntohs` 是用于转换字节顺序的函数。计算机内一般是小端存储: `0x12345678`, 最左侧的`0x78`存储在高位；网络发送时，用的是大端模式。
 
+<!-- 如:
 ```c
 uint32_t a = 0x12345678;
 printf("res: 0x%x\n", htonl(a)); // 0x78563412
-```
+```-->
 
 在绑定过程，如果发现`*port == 0`, 则说明端口没有绑定成功，需要使用`int(*getsockname)(int, struct sockaddr*, int*)`函数请求系统给httpd分配端口
 
