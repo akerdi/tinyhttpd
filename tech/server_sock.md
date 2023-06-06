@@ -5,7 +5,7 @@
 ```c
 int startup(u_short* port) {
   int httpd = -1;
-  // PF_INET 和AF_INET基本一致, 推荐写AF_INET
+  // IPv4: PF_INET 和AF_INET基本一致, 推荐写AF_INET
   // SOCK_STREAM 指TCP协议, SOCK_DGRAM 指UDP
   // 最后一位为保留位
   httpd = socket(AF_INET, SOCK_STREAM, 0);
