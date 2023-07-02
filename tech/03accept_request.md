@@ -72,6 +72,8 @@ void accept_request(int client) {
 ```c
 void accept_request(int client) {
   ...
++ // 如果文件读取失败，则返回404文件不存在
++ // headers仍然需要全部读取完，否则客户端会认为非正常中断
 + if (stat(path, &st) < 0) {
 +   while (read_count > 0 && strcmp(buf, "\n")) {
 +     read_count = read_line(client, buf, sizeof(buf));

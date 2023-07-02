@@ -22,10 +22,10 @@ IDE: VSCode
 
 ## 教程
 
-+ [启动服务端Socket](./tech/server_sock.md)
-+ [浏览器连接并打印请求头信息](./tech/client_sock.md)
-+ [发送文件到浏览器](./tech/accept_request.md)
-+ [执行浏览器发送的命令](./tech/execute_cgi.md)
++ [启动服务端Socket](./tech/01server_sock.md)
++ [浏览器连接并打印请求头信息](./tech/02client_sock.md)
++ [发送文件到浏览器](./tech/03accept_request.md)
++ [执行浏览器发送的命令](./tech/04execute_cgi.md)
 
 ## 请我喝杯咖啡
 

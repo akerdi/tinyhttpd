@@ -31,7 +31,8 @@ void execute_cgi(const int client, const char* path, const char* method, const c
 +   while (read_count > 0 && strcmp(buf, "\n")) {
 +     read_count = read_line(client, buf, sizeof(buf));
 +     // 由于不需要读取除了Content-Length之外的数据
-+     // 直接截取第15个字符(`Content-Length:`下标索引为14)为\0后比对
++     // `Content-Length:`后接一个空格字符, 所以直接截取第15个字符为\0后比对
++     // 比对成功，则buf[16]开始就为长度数据
 +     buf[15] = '\0';
 +     if (strcmp(buf, "Content-Length:") == 0) {
 +       content_length = atoi(&(buf[16]));
@@ -123,7 +124,7 @@ void execute_cgi(const int client, const char* path, const char* method, const c
 +   }
 +   // 关闭使用完的信道
 +   close(pipe_out[0]);
-+   // 等待回收子进程
++   // 执行waitpid 为子进程收拾进程数据，否则会成为僵尸进程
 +   waitpid(pid, &status, 0);
 + }
 }
